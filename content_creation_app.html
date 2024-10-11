@@ -69,76 +69,123 @@
         }
 
         function submitContent() {
-            const longFormContent = document.getElementById('longContent').value;
-            const selectedTypes = [];
-            if (document.getElementById('linkedinPost').checked) selectedTypes.push({ type: 'Linkedin Post', prompt: prompts['Linkedin Post'] });
-            if (document.getElementById('videoDemo').checked) selectedTypes.push({ type: 'Video Demo Script', prompt: prompts['Video Demo Script'] });
-            if (document.getElementById('changelog').checked) selectedTypes.push({ type: 'Changelog', prompt: prompts['Changelog'] });
-            if (document.getElementById('slackMessage').checked) selectedTypes.push({ type: 'Slack message', prompt: prompts['Slack message'] });
-            if (document.getElementById('blogIntro').checked) selectedTypes.push({ type: 'Intro for Blog Post', prompt: prompts['Intro for Blog Post'] });
+    const longFormContent = document.getElementById('longContent').value;
+    const selectedTypes = [];
+    const generalPrompt = "Please generate a short form post as specified in the type above. No further instructions.";
 
-            // Collect custom content types
-            const customInputs = document.getElementsByClassName('custom-type-input');
-            for (let i = 0; i < customInputs.length; i++) {
-                const customValue = customInputs[i].value.trim();
-                if (customValue) selectedTypes.push({ type: customValue, prompt: `Custom prompt for ${customValue}` }); // Send custom type with a default or custom prompt
-            }
+    // Collect predefined content types and their prompts
+    if (document.getElementById('linkedinPost').checked) selectedTypes.push({ type: 'Linkedin Post', prompt: prompts['Linkedin Post'] });
+    if (document.getElementById('videoDemo').checked) selectedTypes.push({ type: 'Video Demo Script', prompt: prompts['Video Demo Script'] });
+    if (document.getElementById('changelog').checked) selectedTypes.push({ type: 'Changelog', prompt: prompts['Changelog'] });
+    if (document.getElementById('slackMessage').checked) selectedTypes.push({ type: 'Slack message', prompt: prompts['Slack message'] });
+    if (document.getElementById('blogIntro').checked) selectedTypes.push({ type: 'Intro for Blog Post', prompt: prompts['Intro for Blog Post'] });
 
-            // Retrieve token and timestamp from local storage
-            const token = localStorage.getItem('token');
-            const tokenTimestamp = localStorage.getItem('tokenTimestamp');
-            const currentTime = new Date().getTime();
-
-            // Check if the token is still valid (30 minutes = 1800000 ms)
-            if (!token || currentTime - tokenTimestamp > 1800000) {
-                alert('Your session has expired. Please log in again.');
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Show status indicator
-            document.getElementById('status').textContent = 'Status: In Progress';
-
-            // Trigger webhook with token and content types
-            const webhookUrl = 'https://hook.eu1.make.com/5y3ekautp96feqn5rcv3gg9tysi10jx0'; // Replace with your webhook URL
-            fetch(webhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Include token in Authorization header
-                },
-                body: JSON.stringify({
-                    longContent: longFormContent,
-                    types: selectedTypes
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('status').textContent = 'Status: Complete';
-                document.getElementById('results').innerHTML = '';
-
-                // Check if the response is an array and iterate through it
-                if (Array.isArray(data)) {
-                    data.forEach((content, index) => {
-                        const contentDiv = document.createElement('div');
-                        contentDiv.innerHTML = `
-                            <h3>${content.type}</h3>
-                            <textarea id="editedContent${index}" rows="5" cols="50">${content.text}</textarea>
-                        `;
-                        document.getElementById('results').appendChild(contentDiv);
-                    });
-                } else {
-                    document.getElementById('status').textContent = 'Invalid response format';
-                }
-
-                // Show Save to Google Docs button
-                document.getElementById('saveBtn').style.display = 'block';
-            })
-            .catch(error => {
-                document.getElementById('status').textContent = 'Status: Error occurred';
-                console.error('Error:', error);
-            });
+    // Collect custom content types and assign the general prompt to them
+    const customInputs = document.getElementsByClassName('custom-type-input');
+    for (let i = 0; i < customInputs.length; i++) {
+        const customValue = customInputs[i].value.trim();
+        if (customValue) {
+            selectedTypes.push({ type: customValue, prompt: generalPrompt });
         }
-    </script>
+    }
+
+    // Retrieve token and timestamp from local storage
+    const token = localStorage.getItem('token');
+    const tokenTimestamp = localStorage.getItem('tokenTimestamp');
+    const currentTime = new Date().getTime();
+
+    // Check if the token is still valid (30 minutes = 1800000 ms)
+    if (!token || currentTime - tokenTimestamp > 1800000) {
+        alert('Your session has expired. Please log in again.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    // Show status indicator
+    document.getElementById('status').textContent = 'Status: In Progress';
+
+    // Trigger webhook with token and content types
+    const webhookUrl = 'https://hook.eu1.make.com/5y3ekautp96feqn5rcv3gg9tysi10jx0'; // Replace with your webhook URL
+    fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            longContent: longFormContent,
+            types: selectedTypes
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('status').textContent = 'Status: Complete';
+        document.getElementById('results').innerHTML = '';
+
+        // Handle and display the JSON array response
+        if (Array.isArray(data)) {
+            // Save to localStorage
+            saveToLocalStorage(data);
+
+            // Display generated content
+            data.forEach((content, index) => {
+                const contentDiv = document.createElement('div');
+                contentDiv.innerHTML = `
+                    <h3>${content.type}</h3>
+                    <textarea id="editedContent${index}" rows="5" cols="50">${content.text}</textarea>
+                `;
+                document.getElementById('results').appendChild(contentDiv);
+            });
+        } else {
+            document.getElementById('results').innerHTML = '<p>No content generated</p>';
+        }
+
+        // Show Save to Google Docs button
+        document.getElementById('saveBtn').style.display = 'block';
+    })
+    .catch(error => {
+        document.getElementById('status').textContent = 'Status: Error occurred';
+        console.error('Error:', error);
+    });
+}
+
+// Save to localStorage
+function saveToLocalStorage(data) {
+    // Retrieve the existing generations or create a new array
+    let savedGenerations = JSON.parse(localStorage.getItem('savedGenerations')) || [];
+    
+    // Add the new generation to the list
+    savedGenerations.push(data);
+    
+    // Save the updated list back to localStorage
+    localStorage.setItem('savedGenerations', JSON.stringify(savedGenerations));
+}
+
+// Load from localStorage
+function loadFromLocalStorage() {
+    const savedGenerations = JSON.parse(localStorage.getItem('savedGenerations')) || [];
+    
+    document.getElementById('results').innerHTML = '';
+
+    // Display the saved generations
+    savedGenerations.forEach((generation, genIndex) => {
+        generation.forEach((content, contentIndex) => {
+            const contentDiv = document.createElement('div');
+            contentDiv.innerHTML = `
+                <h3>Past Generation #${genIndex + 1} - ${content.type}</h3>
+                <textarea id="savedContent${genIndex}_${contentIndex}" rows="5" cols="50">${content.text}</textarea>
+            `;
+            document.getElementById('results').appendChild(contentDiv);
+        });
+    });
+}
+
+// Add a button to load past generations
+window.onload = function() {
+    const loadButton = document.createElement('button');
+    loadButton.textContent = "Load Past Generations";
+    loadButton.onclick = loadFromLocalStorage;
+    document.body.insertBefore(loadButton, document.getElementById('results'));
+};    </script>
 </body>
 </html>
