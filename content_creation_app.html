@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Creation App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Content Creation App</h1>
+
+    <!-- Long Form Content Input -->
+    <label for="longContent">Paste Long Form Content:</label><br>
+    <textarea id="longContent" rows="10" cols="50"></textarea><br><br>
+
+    <!-- Predefined Short Form Content Type Selection -->
+    <label>Select Short Form Content Types:</label><br>
+    <input type="checkbox" id="linkedinPost" value="Linkedin Post"> Linkedin Post<br>
+    <input type="checkbox" id="videoDemo" value="Video Demo Script"> Video Demo Script<br>
+    <input type="checkbox" id="changelog" value="Changelog"> Changelog<br>
+    <input type="checkbox" id="slackMessage" value="Slack message"> Slack message<br>
+    <input type="checkbox" id="blogIntro" value="Intro for Blog Post"> Intro for Blog Post<br><br>
+
+    <!-- Custom Content Type Inputs -->
+    <label>Custom Content Types:</label><br>
+    <div id="customContentTypes"></div>
+    <button id="addMoreBtn" onclick="addCustomContentType()">Add</button><br><br>
+
+    <!-- Submit Button -->
+    <button id="submitBtn" onclick="submitContent()">Submit</button><br><br>
+
+    <!-- Status Indicator -->
+    <div id="status">Status: Waiting for submission</div>
+
+    <!-- Editable Short Form Content Display -->
+    <div id="results"></div>
+
+    <!-- Save to Google Docs Button -->
+    <button id="saveBtn" onclick="saveToDocs()" style="display:none;">Save to Google Docs</button><br><br>
+
+    <!-- Move your JavaScript here -->
+    <script>
+        let customTypeCount = 0;
+
+        // Predefined content type prompts
+        const prompts = {
+    "Linkedin Post": "400-700 characters.\nWill be posted on the founder's linkedin, thus, write from his perspective.\nshort sentences, use some longer sentences to break up the flow.\nKeep it informative, not salesy or marketingy.\nMake it specific, it's important people really understand what it's about. So don't use fluff, tell how it is and make that clear.\nOptimize for clarity, it should be organized very well.\nEvery sentence gets own paragraph for readability on mobile.\nNo formatting available.\nDon't be too detailed, e.g. no how to instructions in linkedin posts\nDon't put call to actions at the end of the post.\n\nExample #1:\nOur video recording feature has left beta & received an upgrade:\n\nYou can now use video block intros to personally explain any block in a Valuecase Space.\n\nWant to walk a client through a proposal or an onboarding plan?\n\nJust click the three-dot menu next to any block and select \"record block intro.\" It's that simple.\n\nYou'll give your customers a much more personalized experience.\n\nWe've also added some quality of life improvements.\n\nInstant video previews after recording (in some browsers), the ability to delete videos while they process, and various bug fixes based on user feedback.\n\n15 hours of videos have already been recorded in Valuecase.\n\nNow it's your turn to try it out.\n\nExample #2: \nHUGE!! -- For all of you working with our onboarding and success plans:\n\nI'm thrilled to introduce our NEW task dashboard!\n\nIt'll 10x your speed.\n\nHere's how it works:\n\nClick \"Tasks\" in your Valuecase environment.\n\nYou'll find a super clean progress chart that tracks your Spaces, with customer logos moving as you complete action plans.\n\nTasks are sorted into three columns: due next, overdue, and unscheduled.\n\nYou can even complete tasks right from the dashboard.\n\nMore features are on the way, like extra filters, task details, and Chrome extension integration.\n\nI'm pretty sure this will quickly become one of our most loved features.\n\nBig shoutout to the team for creating a task dashboard that’s genuinely useful!",
+    
+    "Video Demo Script": "Video length: 1-2 minutes.\nNo professional production, just a screen share walkthrough.\nJust make it bullets, not exact wording.\n\nScript template:\n{What it is}\n{Why it's important}\n{Walkthrough}",
+
+    "Changelog": "You are given a long-form product release newsletter that details new features, updates, and improvements. Your task is to condense this information into a concise changelog suitable for in-product communication. The changelog should be brief, clear, and focused on the most important updates. Follow these guidelines:\n\n1. Identify Key Points: Extract the most significant features, updates, and improvements from the newsletter.\n2. Brevity: Summarize the information in a concise manner, using bullet points or short paragraphs. Each update should be no more than 2-3 sentences.\n3. Clarity: Ensure the language is clear and easily understandable for the target audience.\n4. Relevance: Include only the most relevant details that users need to know.\n5. Tone and Style: Maintain an engaging and professional tone.\n6. Formatting: Use emojis and section headings to categorize and highlight different types of updates (e.g., new features, improvements, bug fixes).",
+
+    "Slack message": "You are given the latest product updates that need to be communicated to customers via a short Slack message. Your task is to create a concise, engaging, and informative message that highlights the key updates. The message should be brief, friendly, and encourage customers to check out the new features. Follow these guidelines:\n\n1. Greeting: Start with a friendly greeting like \"Hey all\".\n2. Highlight Key Updates: Briefly mention the most significant updates.\n3. Encouragement: Encourage customers to explore the new features or improvements.\n4. Tone and Style: Maintain an informal and engaging tone suitable for a Slack message.\n5. Keep short and easy to scan.\n6. No fluff, no CTA.\n\nExample:\n\nHey all, We released content automation today - a huge time saver. This enables you to create if-this-then-that automations to control page/block visibility based on variables.\n\nE.g., you could set up an automation that shows a specific testimonial block, a business case page, and a specific pricing ONLY if the space is for an Enterprise customer. Else, these elements would be hidden.\n\nTo make it a bit easier to understand, we recorded a video for you here (https://www.loom.com/share/61304744354745d0863fd8aa57803f60?sid=a8a45866-55cc-4a34-aa47-9e42abaace2e) and created a help article here (https://help.valuecase.de/en/articles/141106-content-automation). Any questions ➝ ping us.",
+
+    "Intro for Blog Post": "You are given a detailed product release newsletter that outlines new features, updates, and improvements. Your task is to condense this information into a concise one-paragraph summary suitable for an introduction to a blog post. The summary should be engaging, informative, and highlight the most important updates. Follow these guidelines:\n\nAim for 25-35 words.\nSummarize key points, but the summary does not need to be exhaustive. Just key points.\nKeep it specific.\nClarity: Ensure the language is clear and easily understandable.\nTone and Style: Maintain a tone that is professional yet approachable.\nDon't use meaningless intro words like \"Big news!\". No CTA to read the blog as users will just scroll down."
+};
+
+        // Function to add a new custom content type input
+        function addCustomContentType() {
+            const customContainer = document.getElementById('customContentTypes');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = 'Enter custom content type';
+            input.id = `customType${customTypeCount}`;
+            input.classList.add('custom-type-input');
+            customContainer.appendChild(input);
+            customContainer.appendChild(document.createElement('br')); // Newline after each input
+            customTypeCount++;
+        }
+
+        function submitContent() {
+            const longFormContent = document.getElementById('longContent').value;
+            const selectedTypes = [];
+            if (document.getElementById('linkedinPost').checked) selectedTypes.push({ type: 'Linkedin Post', prompt: prompts['Linkedin Post'] });
+            if (document.getElementById('videoDemo').checked) selectedTypes.push({ type: 'Video Demo Script', prompt: prompts['Video Demo Script'] });
+            if (document.getElementById('changelog').checked) selectedTypes.push({ type: 'Changelog', prompt: prompts['Changelog'] });
+            if (document.getElementById('slackMessage').checked) selectedTypes.push({ type: 'Slack message', prompt: prompts['Slack message'] });
+            if (document.getElementById('blogIntro').checked) selectedTypes.push({ type: 'Intro for Blog Post', prompt: prompts['Intro for Blog Post'] });
+
+            // Collect custom content types
+            const customInputs = document.getElementsByClassName('custom-type-input');
+            for (let i = 0; i < customInputs.length; i++) {
+                const customValue = customInputs[i].value.trim();
+                if (customValue) selectedTypes.push({ type: customValue, prompt: `Custom prompt for ${customValue}` }); // Send custom type with a default or custom prompt
+            }
+
+            // Retrieve token and timestamp from local storage
+            const token = localStorage.getItem('token');
+            const tokenTimestamp = localStorage.getItem('tokenTimestamp');
+            const currentTime = new Date().getTime();
+
+            // Check if the token is still valid (30 minutes = 1800000 ms)
+            if (!token || currentTime - tokenTimestamp > 1800000) {
+                alert('Your session has expired. Please log in again.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Show status indicator
+            document.getElementById('status').textContent = 'Status: In Progress';
+
+            // Trigger webhook with token and content types
+            const webhookUrl = 'https://hook.eu1.make.com/5y3ekautp96feqn5rcv3gg9tysi10jx0'; // Replace with your webhook URL
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Include token in Authorization header
+                },
+                body: JSON.stringify({
+                    longContent: longFormContent,
+                    types: selectedTypes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('status').textContent = 'Status: Complete';
+                document.getElementById('results').innerHTML = '';
+
+                // Check if the response is an array and iterate through it
+                if (Array.isArray(data)) {
+                    data.forEach((content, index) => {
+                        const contentDiv = document.createElement('div');
+                        contentDiv.innerHTML = `
+                            <h3>${content.type}</h3>
+                            <textarea id="editedContent${index}" rows="5" cols="50">${content.text}</textarea>
+                        `;
+                        document.getElementById('results').appendChild(contentDiv);
+                    });
+                } else {
+                    document.getElementById('status').textContent = 'Invalid response format';
+                }
+
+                // Show Save to Google Docs button
+                document.getElementById('saveBtn').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('status').textContent = 'Status: Error occurred';
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</body>
+</html>
