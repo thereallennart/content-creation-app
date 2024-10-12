@@ -7,38 +7,68 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Content Creation App</h1>
+    <header>
+        <h1>Content Creation App</h1>
+    </header>
+    <main>
+        <div class="tabs">
+            <button class="tab-button active" data-tab="input">Input</button>
+            <button class="tab-button" data-tab="output">Output</button>
+        </div>
+        <div id="input" class="tab-content active">
+            <!-- Long Form Content Input -->
+            <label for="longContent">Paste Long Form Content:</label><br>
+            <textarea id="longContent" rows="10" cols="50"></textarea><br><br>
 
-    <!-- Long Form Content Input -->
-    <label for="longContent">Paste Long Form Content:</label><br>
-    <textarea id="longContent" rows="10" cols="50"></textarea><br><br>
+            <!-- Predefined Short Form Content Type Selection -->
+            <label>Select Short Form Content Types:</label><br>
+            <div class="post-type-buttons">
+                <button type="button" class="post-type-button" data-type="Linkedin Post">
+                    <img src="icons/linkedin.svg" alt="Linkedin Icon" class="icon">
+                    <span>Linkedin Post</span>
+                </button>
+                <button type="button" class="post-type-button" data-type="Video Demo Script">
+                    <img src="icons/video.svg" alt="Video Icon" class="icon">
+                    <span>Video Demo Script</span>
+                </button>
+                <button type="button" class="post-type-button" data-type="Changelog">
+                    <img src="icons/changelog.svg" alt="Changelog Icon" class="icon">
+                    <span>Changelog</span>
+                </button>
+                <button type="button" class="post-type-button" data-type="Slack message">
+                    <img src="icons/slack.svg" alt="Slack Icon" class="icon">
+                    <span>Slack message</span>
+                </button>
+                <button type="button" class="post-type-button" data-type="Intro for Blog Post">
+                    <img src="icons/blog.svg" alt="Blog Icon" class="icon">
+                    <span>Intro for Blog Post</span>
+                </button>
+            </div><br>
 
-    <!-- Predefined Short Form Content Type Selection -->
-    <label>Select Short Form Content Types:</label><br>
-    <input type="checkbox" id="linkedinPost" value="Linkedin Post"> Linkedin Post<br>
-    <input type="checkbox" id="videoDemo" value="Video Demo Script"> Video Demo Script<br>
-    <input type="checkbox" id="changelog" value="Changelog"> Changelog<br>
-    <input type="checkbox" id="slackMessage" value="Slack message"> Slack message<br>
-    <input type="checkbox" id="blogIntro" value="Intro for Blog Post"> Intro for Blog Post<br><br>
+            <!-- Custom Content Type Inputs -->
+            <label>Custom Content Types:</label><br>
+            <div id="customContentTypes"></div>
+            <button id="addMoreBtn" onclick="addCustomContentType()">Add</button><br><br>
 
-    <!-- Custom Content Type Inputs -->
-    <label>Custom Content Types:</label><br>
-    <div id="customContentTypes"></div>
-    <button id="addMoreBtn" onclick="addCustomContentType()">Add</button><br><br>
+            <!-- Submit Button -->
+            <button id="submitBtn" onclick="submitContent()">Submit</button><br><br>
 
-    <!-- Submit Button -->
-    <button id="submitBtn" onclick="submitContent()">Submit</button><br><br>
+            <!-- Status Indicator -->
+            <div id="status">Status: Waiting for submission</div>
+        </div>
+        <div id="output" class="tab-content">
+            <!-- Editable Short Form Content Display -->
+            <div id="results"></div>
 
-    <!-- Status Indicator -->
-    <div id="status">Status: Waiting for submission</div>
+            <!-- Save to Google Docs Button -->
+            <button id="saveBtn" onclick="saveToDocs()" style="display:none;">Save to Google Docs</button><br><br>
 
-    <!-- Editable Short Form Content Display -->
-    <div id="results"></div>
+            <!-- Past Generations Container -->
+            <h2>Past Generations</h2>
+            <div id="pastGenerations"></div>
+        </div>
+    </main>
 
-    <!-- Save to Google Docs Button -->
-    <button id="saveBtn" onclick="saveToDocs()" style="display:none;">Save to Google Docs</button><br><br>
-
-    <!-- Move your JavaScript here -->
     <script>
         let customTypeCount = 0;
 
@@ -58,134 +88,218 @@
         // Function to add a new custom content type input
         function addCustomContentType() {
             const customContainer = document.getElementById('customContentTypes');
+            const wrapper = document.createElement('div');
+            wrapper.className = 'custom-type-wrapper';
+            wrapper.id = `customTypeWrapper${customTypeCount}`;
+
             const input = document.createElement('input');
             input.type = 'text';
             input.placeholder = 'Enter custom content type';
             input.id = `customType${customTypeCount}`;
             input.classList.add('custom-type-input');
-            customContainer.appendChild(input);
-            customContainer.appendChild(document.createElement('br')); // Newline after each input
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = function() {
+                customContainer.removeChild(wrapper);
+            };
+
+            wrapper.appendChild(input);
+            wrapper.appendChild(deleteBtn);
+            customContainer.appendChild(wrapper);
             customTypeCount++;
         }
 
-        function submitContent() {
-    const longFormContent = document.getElementById('longContent').value;
-    const selectedTypes = [];
-    const generalPrompt = "Please generate a short form post as specified in the type above. No further instructions.";
+        function switchToTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
 
-    // Collect predefined content types and their prompts
-    if (document.getElementById('linkedinPost').checked) selectedTypes.push({ type: 'Linkedin Post', prompt: prompts['Linkedin Post'] });
-    if (document.getElementById('videoDemo').checked) selectedTypes.push({ type: 'Video Demo Script', prompt: prompts['Video Demo Script'] });
-    if (document.getElementById('changelog').checked) selectedTypes.push({ type: 'Changelog', prompt: prompts['Changelog'] });
-    if (document.getElementById('slackMessage').checked) selectedTypes.push({ type: 'Slack message', prompt: prompts['Slack message'] });
-    if (document.getElementById('blogIntro').checked) selectedTypes.push({ type: 'Intro for Blog Post', prompt: prompts['Intro for Blog Post'] });
-
-    // Collect custom content types and assign the general prompt to them
-    const customInputs = document.getElementsByClassName('custom-type-input');
-    for (let i = 0; i < customInputs.length; i++) {
-        const customValue = customInputs[i].value.trim();
-        if (customValue) {
-            selectedTypes.push({ type: customValue, prompt: generalPrompt });
-        }
-    }
-
-    // Retrieve token and timestamp from local storage
-    const token = localStorage.getItem('token');
-    const tokenTimestamp = localStorage.getItem('tokenTimestamp');
-    const currentTime = new Date().getTime();
-
-    // Check if the token is still valid (30 minutes = 1800000 ms)
-    if (!token || currentTime - tokenTimestamp > 1800000) {
-        alert('Your session has expired. Please log in again.');
-        window.location.href = 'login.html';
-        return;
-    }
-
-    // Show status indicator
-    document.getElementById('status').textContent = 'Status: In Progress';
-
-    // Trigger webhook with token and content types
-    const webhookUrl = 'https://hook.eu1.make.com/5y3ekautp96feqn5rcv3gg9tysi10jx0'; // Replace with your webhook URL
-    fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-            longContent: longFormContent,
-            types: selectedTypes
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('status').textContent = 'Status: Complete';
-        document.getElementById('results').innerHTML = '';
-
-        // Handle and display the JSON array response
-        if (Array.isArray(data)) {
-            // Save to localStorage
-            saveToLocalStorage(data);
-
-            // Display generated content
-            data.forEach((content, index) => {
-                const contentDiv = document.createElement('div');
-                contentDiv.innerHTML = `
-                    <h3>${content.type}</h3>
-                    <textarea id="editedContent${index}" rows="5" cols="50">${content.text}</textarea>
-                `;
-                document.getElementById('results').appendChild(contentDiv);
+            tabs.forEach(tab => {
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
             });
-        } else {
-            document.getElementById('results').innerHTML = '<p>No content generated</p>';
+
+            contents.forEach(content => {
+                if (content.id === tabName) {
+                    content.classList.add('active');
+                } else {
+                    content.classList.remove('active');
+                }
+            });
         }
 
-        // Show Save to Google Docs button
-        document.getElementById('saveBtn').style.display = 'block';
-    })
-    .catch(error => {
-        document.getElementById('status').textContent = 'Status: Error occurred';
-        console.error('Error:', error);
-    });
-}
+        function submitContent() {
+            const longFormContent = document.getElementById('longContent').value;
+            const selectedTypes = [];
 
-// Save to localStorage
-function saveToLocalStorage(data) {
-    // Retrieve the existing generations or create a new array
-    let savedGenerations = JSON.parse(localStorage.getItem('savedGenerations')) || [];
-    
-    // Add the new generation to the list
-    savedGenerations.push(data);
-    
-    // Save the updated list back to localStorage
-    localStorage.setItem('savedGenerations', JSON.stringify(savedGenerations));
-}
+            // Collect selected post types from active buttons
+            document.querySelectorAll('.post-type-button.active').forEach(button => {
+                const type = button.getAttribute('data-type');
+                if (type && prompts[type]) {
+                    selectedTypes.push({ type: type, prompt: prompts[type] });
+                }
+            });
 
-// Load from localStorage
-function loadFromLocalStorage() {
-    const savedGenerations = JSON.parse(localStorage.getItem('savedGenerations')) || [];
-    
-    document.getElementById('results').innerHTML = '';
+            // Collect custom content types
+            const customInputs = document.getElementsByClassName('custom-type-input');
+            for (let i = 0; i < customInputs.length; i++) {
+                const customValue = customInputs[i].value.trim();
+                if (customValue) {
+                    const confirmAdd = confirm(`Are you sure you want to include "${customValue}" as a custom content type?`);
+                    if (confirmAdd) {
+                        selectedTypes.push({ type: customValue, prompt: `Custom prompt for ${customValue}` });
+                    }
+                }
+            }
 
-    // Display the saved generations
-    savedGenerations.forEach((generation, genIndex) => {
-        generation.forEach((content, contentIndex) => {
-            const contentDiv = document.createElement('div');
-            contentDiv.innerHTML = `
-                <h3>Past Generation #${genIndex + 1} - ${content.type}</h3>
-                <textarea id="savedContent${genIndex}_${contentIndex}" rows="5" cols="50">${content.text}</textarea>
-            `;
-            document.getElementById('results').appendChild(contentDiv);
+            // Check if there are any selected types
+            if (selectedTypes.length === 0) {
+                alert('Please select at least one content type.');
+                return;
+            }
+
+            // Retrieve token and timestamp from local storage
+            const token = localStorage.getItem('token');
+            const tokenTimestamp = localStorage.getItem('tokenTimestamp');
+            const currentTime = new Date().getTime();
+
+            // Check if the token is still valid (30 minutes = 1800000 ms)
+            if (!token || currentTime - tokenTimestamp > 1800000) {
+                alert('Your session has expired. Please log in again.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Show status indicator
+            document.getElementById('status').textContent = 'Status: In Progress';
+
+            // Trigger webhook with token and content types
+            const webhookUrl = 'https://hook.eu1.make.com/5y3ekautp96feqn5rcv3gg9tysi10jx0'; // Replace with your webhook URL
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Include token in Authorization header
+                },
+                body: JSON.stringify({
+                    longContent: longFormContent,
+                    types: selectedTypes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('status').textContent = 'Status: Complete';
+                document.getElementById('results').innerHTML = '';
+
+                // Save generation to local storage
+                const timestamp = new Date().toISOString();
+                const generation = { timestamp, data };
+                let pastGenerations = JSON.parse(localStorage.getItem('pastGenerations')) || [];
+                pastGenerations.unshift(generation);
+                localStorage.setItem('pastGenerations', JSON.stringify(pastGenerations));
+
+                displayResults(data);
+                updatePastGenerations();
+
+                // Show Save to Google Docs button
+                document.getElementById('saveBtn').style.display = 'block';
+
+                // Automatically switch to the output tab
+                switchToTab('output');
+            })
+            .catch(error => {
+                document.getElementById('status').textContent = 'Status: Error occurred';
+                console.error('Error:', error);
+            });
+        }
+
+        function displayResults(data) {
+            // Move the existing result display logic here
+            if (Array.isArray(data)) {
+                data.forEach((content, index) => {
+                    const contentDiv = document.createElement('div');
+                    contentDiv.classList.add('content-item');
+
+                    // Add headline for all content types
+                    const headline = document.createElement('h3');
+                    headline.textContent = content.type;
+                    contentDiv.appendChild(headline);
+
+                    // Render LinkedIn-style preview for LinkedIn posts
+                    if (content.type === 'Linkedin Post') {
+                        const linkedinPreview = document.createElement('div');
+                        linkedinPreview.classList.add('linkedin-preview');
+                        linkedinPreview.innerHTML = `
+                            <div class="linkedin-post">
+                                <div class="linkedin-header">
+                                    <img src="https://via.placeholder.com/50" alt="Profile Picture" class="linkedin-profile-pic">
+                                    <div class="linkedin-header-text">
+                                        <p class="linkedin-name">John Doe</p>
+                                        <p class="linkedin-title">Dummy Title</p>
+                                    </div>
+                                </div>
+                                <textarea class="linkedin-content" rows="5" cols="50">${content.text}</textarea>
+                            </div>
+                        `;
+                        contentDiv.appendChild(linkedinPreview);
+                    } else {
+                        const textarea = document.createElement('textarea');
+                        textarea.id = `editedContent${index}`;
+                        textarea.rows = 5;
+                        textarea.cols = 50;
+                        textarea.value = content.text;
+                        contentDiv.appendChild(textarea);
+                    }
+
+                    document.getElementById('results').appendChild(contentDiv);
+                });
+            } else {
+                document.getElementById('status').textContent = 'Invalid response format';
+            }
+        }
+
+        function updatePastGenerations() {
+            const pastGenerationsContainer = document.getElementById('pastGenerations');
+            pastGenerationsContainer.innerHTML = '';
+            const pastGenerations = JSON.parse(localStorage.getItem('pastGenerations')) || [];
+
+            pastGenerations.forEach((generation, index) => {
+                const generationItem = document.createElement('div');
+                generationItem.classList.add('past-generation-item');
+                generationItem.textContent = new Date(generation.timestamp).toLocaleString();
+                generationItem.onclick = () => displayResults(generation.data);
+                pastGenerationsContainer.appendChild(generationItem);
+            });
+        }
+
+        // Add this new function for tab switching
+        function setupTabs() {
+            const tabs = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tab.dataset.tab).classList.add('active');
+                });
+            });
+        }
+
+        window.onload = function() {
+            updatePastGenerations();
+            setupTabs();
+        };
+
+        document.querySelectorAll('.post-type-button').forEach(button => {
+            button.addEventListener('click', () => {
+                button.classList.toggle('active');
+            });
         });
-    });
-}
-
-// Add a button to load past generations
-window.onload = function() {
-    const loadButton = document.createElement('button');
-    loadButton.textContent = "Load Past Generations";
-    loadButton.onclick = loadFromLocalStorage;
-    document.body.insertBefore(loadButton, document.getElementById('results'));
-};    </script>
+    </script>
 </body>
 </html>

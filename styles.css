@@ -1,54 +1,142 @@
-
 /* General Styles */
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: 0;
     background-color: #f5f5f5;
-    color: #333;
+    color: #070707;
 }
 
-h1, h2 {
-    color: #3f51b5;
-    margin-bottom: 20px;
+header {
+    background-color: #ffffff;
+    padding: 1rem 3rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0; /* Light grey border for the tab container */
+    margin-bottom: 2rem;
+}
+
+.tab-button {
+    background: none !important; /* Ensure no background */
+    border: none;
+    padding: 0.5rem 1rem; /* Reduced padding */
+    font-size: 1rem;
+    cursor: pointer;
+    color: #888; /* Grey text for inactive tabs */
+    border-bottom: 1px solid transparent; /* Transparent border for inactive tabs */
+    transition: color 0.3s ease, border-color 0.3s ease;
+    border-radius: 0; /* Ensure no border radius */
+    position: relative; /* Position relative for z-index */
+    z-index: 1; /* Ensure tab is above the grey border */
+}
+
+.tab-button.active {
+    color: #007BFF; /* Blue text for active tab */
+    border-bottom-color: #007BFF; /* Blue bottom border for active tab */
+    font-weight: bold;
+    border-bottom-width: 2px; /* Thicker blue border for active tab */
+    border-radius: 0; /* Remove border radius for active tab */
+    z-index: 2; /* Bring active tab to the front */
+    margin-bottom: -1px; /* Pull the active tab down to cover the grey border */
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 label {
+    display: block;
+    margin-bottom: 0.5rem;
     font-weight: bold;
-    color: #3f51b5;
 }
 
-textarea, input[type="checkbox"] {
+textarea, input[type="text"] {
     width: 100%;
     padding: 10px;
-    margin-bottom: 20px;
-    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 1rem;
-}
-
-textarea {
-    min-height: 120px;
+    box-sizing: border-box;
 }
 
 button {
-    background-color: #3f51b5;
-    color: white;
+    padding: 10px 15px;
     border: none;
-    padding: 12px 24px;
     border-radius: 4px;
-    font-size: 1rem;
     cursor: pointer;
-    transition: background-color 0.3s;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: #303f9f;
+/* Default button style */
+button:not(#submitBtn) {
+    background-color: #f0f0f0;
+    color: #333;
 }
 
-button:disabled {
-    background-color: #b0bec5;
-    cursor: not-allowed;
+button:not(#submitBtn):hover {
+    background-color: #e0e0e0;
+}
+
+/* Submit button style */
+#submitBtn {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+}
+
+#submitBtn:hover {
+    background-color: #45a049;
+}
+
+/* Delete button style */
+.custom-type-wrapper button {
+    background-color: #ff4d4d;
+    color: white;
+}
+
+.custom-type-wrapper button:hover {
+    background-color: #ff3333;
+}
+
+/* Add button style */
+#addMoreBtn {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 8px 16px;
+    margin-top: 10px;
+}
+
+#addMoreBtn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Save to Google Docs button style */
+#saveBtn {
+    background-color: #FFA500;
+    color: white;
+}
+
+#saveBtn:hover {
+    background-color: #FF8C00;
 }
 
 /* Status Indicator */
@@ -124,11 +212,143 @@ button:disabled {
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    textarea, input[type="checkbox"], button {
-        width: 100%;
+    main {
+        padding: 1rem;
     }
 
-    #results textarea {
-        min-height: 100px;
+    .tab-button {
+        padding: 0.5rem 1rem;
     }
+}
+
+/* LinkedIn Post Preview Styles */
+.linkedin-preview {
+    max-width: 560px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.linkedin-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.linkedin-profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin-right: 15px;
+}
+
+.linkedin-header-text {
+    color: #666;
+}
+
+.linkedin-name {
+    font-weight: bold;
+    color: #000;
+    margin: 0;
+}
+
+.linkedin-title {
+    color: #888;
+    margin: 0;
+}
+
+#results textarea.linkedin-content {
+    font-size: 14px; /* Set a more LinkedIn-specific font size */
+    color: #000; /* Standard black text */
+    width: 100%; /* Full width */
+    border: 1px dotted lightgrey; /* Remove border to look more like LinkedIn */
+    padding: 0; /* Remove padding to align better with LinkedIn style */
+    resize: none; /* Prevent resizing to keep the layout consistent */
+    background-color: transparent; /* To look like a LinkedIn post rather than a traditional textarea */
+    line-height: 1.5; /* Better spacing for readability */
+    font-family: inherit; /* Use the system font */
+    margin-bottom: 10px; /* Spacing below the textarea */
+}
+
+.custom-type-wrapper {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.custom-type-wrapper input {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.custom-type-wrapper button {
+    width: auto;
+}
+
+.content-item {
+    margin-bottom: 20px;
+}
+
+.content-item h3 {
+    margin-bottom: 10px;
+}
+
+#pastGenerations {
+    margin-top: 20px;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 20px;
+}
+
+.past-generation-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.past-generation-item:hover {
+    background-color: #e0e0e0;
+}
+
+.post-type-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.post-type-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-size: 14px;
+    color: #333;
+}
+
+.post-type-button.active {
+    background-color: #007BFF !important; /* Blue background for active button */
+    color: white !important; /* White text for active button */
+    border: none; /* Remove border for active button */
+}
+
+.post-type-button:hover {
+    background-color: #e0e0e0;
+}
+
+.icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    fill: currentColor; /* Ensures the icon color matches the text color */
 }
