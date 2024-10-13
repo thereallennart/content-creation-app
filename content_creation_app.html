@@ -5,6 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Creation App</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .spinner {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #888; /* Darker grey */
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 2s linear forwards; /* Use 'forwards' to stop at 100% */
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #loadingText {
+            text-align: center;
+            color: #888;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        #loadingIndicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Full viewport height to center vertically */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8); /* Optional: semi-transparent background */
+            z-index: 1000; /* Ensure it overlays other content */
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 </head>
 <body>
     <header>
@@ -16,45 +55,60 @@
             <button class="tab-button" data-tab="output">Output</button>
         </div>
         <div id="input" class="tab-content active">
-            <!-- Long Form Content Input -->
-            <label for="longContent">Paste Long Form Content:</label><br>
-            <textarea id="longContent" rows="10" cols="50"></textarea><br><br>
+            <div id="inputSection">
+                <!-- Long Form Content Input -->
+                <label for="longContent">Paste Long Form Content:</label><br>
+                <textarea id="longContent" rows="10" cols="50"></textarea><br><br>
 
-            <!-- Predefined Short Form Content Type Selection -->
-            <label>Select Short Form Content Types:</label><br>
-            <div class="post-type-buttons">
-                <button type="button" class="post-type-button" data-type="Linkedin Post">
-                    <img src="icons/linkedin.svg" alt="Linkedin Icon" class="icon">
-                    <span>Linkedin Post</span>
-                </button>
-                <button type="button" class="post-type-button" data-type="Video Demo Script">
-                    <img src="icons/video.svg" alt="Video Icon" class="icon">
-                    <span>Video Demo Script</span>
-                </button>
-                <button type="button" class="post-type-button" data-type="Changelog">
-                    <img src="icons/changelog.svg" alt="Changelog Icon" class="icon">
-                    <span>Changelog</span>
-                </button>
-                <button type="button" class="post-type-button" data-type="Slack message">
-                    <img src="icons/slack.svg" alt="Slack Icon" class="icon">
-                    <span>Slack message</span>
-                </button>
-                <button type="button" class="post-type-button" data-type="Intro for Blog Post">
-                    <img src="icons/blog.svg" alt="Blog Icon" class="icon">
-                    <span>Intro for Blog Post</span>
-                </button>
-            </div><br>
+                <!-- Predefined Short Form Content Type Selection -->
+                <label>Select Short Form Content Types:</label><br>
+                <div class="post-type-buttons">
+                    <button type="button" class="post-type-button" data-type="Linkedin Post">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.5 11.268h-3v-5.5c0-1.381-1.119-2.5-2.5-2.5s-2.5 1.119-2.5 2.5v5.5h-3v-10h3v1.5c.69-1.19 2.019-2 3.5-2 2.481 0 4.5 2.019 4.5 4.5v6.5z"/>
+                        </svg>
+                        <span>Linkedin Post</span>
+                    </button>
+                    <button type="button" class="post-type-button" data-type="Video Demo Script">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M17 10.5v-6.5c0-1.104-.896-2-2-2h-10c-1.104 0-2 .896-2 2v12c0 1.104.896 2 2 2h10c1.104 0 2-.896 2-2v-6.5l5 5v-11l-5 5zm-2 7.5h-10v-12h10v12z"/>
+                        </svg>
+                        <span>Video Demo Script</span>
+                    </button>
+                    <button type="button" class="post-type-button" data-type="Changelog">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 22c-5.514 0-10-4.486-10-10s4.486-10 10-10 10 4.486 10 10-4.486 10-10 10zm-1-15h-2v6h6v-2h-4v-4z"/>
+                        </svg>
+                        <span>Changelog</span>
+                    </button>
+                    <button type="button" class="post-type-button" data-type="Slack message">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M5.5 15c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h1.5v-3h-1.5zm0-3h1.5v-3h-1.5c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5zm3 3h3v-3h-3v3zm0-6h3v-3h-3v3zm3 3h3v-3h-3v3zm3 3h1.5c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-1.5v3zm0-6h1.5c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-1.5v3zm-6 6h-1.5c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h1.5v-3zm6 0h3v-3h-3v3zm0-6h3v-3h-3v3z"/>
+                        </svg>
+                        <span>Slack message</span>
+                    </button>
+                    <button type="button" class="post-type-button" data-type="Intro for Blog Post">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 22c-5.514 0-10-4.486-10-10s4.486-10 10-10 10 4.486 10 10-4.486 10-10 10zm-1-15h-2v6h6v-2h-4v-4z"/>
+                        </svg>
+                        <span>Intro for Blog Post</span>
+                    </button>
+                </div><br>
 
-            <!-- Custom Content Type Inputs -->
-            <label>Custom Content Types:</label><br>
-            <div id="customContentTypes"></div>
-            <button id="addMoreBtn" onclick="addCustomContentType()">Add</button><br><br>
+                <!-- Custom Content Type Inputs -->
+                <label>Custom Content Types:</label><br>
+                <div id="customContentTypes"></div>
+                <button id="addMoreBtn" onclick="addCustomContentType()">Add</button><br><br>
 
-            <!-- Submit Button -->
-            <button id="submitBtn" onclick="submitContent()">Submit</button><br><br>
+                <!-- Submit Button -->
+                <button id="submitBtn" onclick="submitContent()">Submit</button><br><br>
+            </div>
 
             <!-- Status Indicator -->
-            <div id="status">Status: Waiting for submission</div>
+            <div id="loadingIndicator" style="display: none;">
+                <div class="spinner"></div>
+                <div id="loadingText">Content sent</div>
+            </div>
         </div>
         <div id="output" class="tab-content">
             <!-- Editable Short Form Content Display -->
@@ -173,8 +227,19 @@
                 return;
             }
 
-            // Show status indicator
-            document.getElementById('status').textContent = 'Status: In Progress';
+            // Hide input section and show loading indicator
+            document.getElementById('inputSection').style.display = 'none';
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const loadingText = document.getElementById('loadingText');
+            loadingIndicator.style.display = 'flex';
+
+            // Cycle through loading messages
+            const messages = ["Content sent", "Magic happening", "Packaging"];
+            let messageIndex = 0;
+            const messageInterval = setInterval(() => {
+                messageIndex = (messageIndex + 1) % messages.length;
+                loadingText.textContent = messages[messageIndex];
+            }, 1000);
 
             // Trigger webhook with token and content types
             const webhookUrl = 'https://hook.eu1.make.com/5y3ekautp96feqn5rcv3gg9tysi10jx0'; // Replace with your webhook URL
@@ -191,7 +256,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('status').textContent = 'Status: Complete';
+                clearInterval(messageInterval);
+                loadingIndicator.style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
+
                 document.getElementById('results').innerHTML = '';
 
                 // Save generation to local storage
@@ -209,9 +277,30 @@
 
                 // Automatically switch to the output tab
                 switchToTab('output');
+
+                // Trigger emoji confetti animation
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 },
+                    shapes: ['text'],
+                    scalar: 1.2,
+                    ticks: 200,
+                    gravity: 0.5,
+                    drift: 0,
+                    text: {
+                        value: ['🎉', '✨', '🎈', '🎊'], // Array of emojis
+                        font: 'Arial',
+                        style: 'normal',
+                        weight: 'bold',
+                        size: 20
+                    }
+                });
             })
             .catch(error => {
-                document.getElementById('status').textContent = 'Status: Error occurred';
+                clearInterval(messageInterval);
+                loadingIndicator.style.display = 'none';
+                document.getElementById('inputSection').style.display = 'block';
                 console.error('Error:', error);
             });
         }
