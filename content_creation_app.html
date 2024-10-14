@@ -5,103 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Content Creation App</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        .spinner {
-            border: 4px solid #f3f3f3; /* Light grey */
-            border-top: 4px solid #888; /* Darker grey */
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            animation: spin 2s linear forwards; /* Use 'forwards' to stop at 100% */
-            margin: 0 auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        #loadingText {
-            text-align: center;
-            color: #888;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-
-        #loadingIndicator {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh; /* Full viewport height to center vertically */
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.8); /* Optional: semi-transparent background */
-            z-index: 1000; /* Ensure it overlays other content */
-        }
-    </style>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+    <!-- Include Quill stylesheet -->
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <!-- Include Quill library -->
+    <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.min.js"></script>
 </head>
 <body>
     <header>
-        <h1>Content Creation App</h1>
+        <div class="header-content">
+            <img src="images/logo.png" alt="Logo" class="logo">
+            <h1>Content Creation App</h1>
+        </div>
     </header>
-    <main>
-        <div class="tabs">
+    <!-- Tabs with full-width background -->
+    <div class="tabs">
+        <div class="tabs-container">
             <button class="tab-button active" data-tab="input">Input</button>
             <button class="tab-button" data-tab="output">Output</button>
         </div>
+    </div>
+    <main>
         <div id="input" class="tab-content active">
             <div id="inputSection">
                 <!-- Long Form Content Input -->
-                <label for="longContent">Paste Long Form Content:</label><br>
-                <textarea id="longContent" rows="10" cols="50"></textarea><br><br>
+                <h2>Step 1: Create Product Newsletter</h2>
+                <div id="editor-container"></div>
+                <button id="saveLongFormBtn" class="button-primary" onclick="saveLongFormContent()">Save Newsletter to ClickUp</button>
 
-                <!-- Predefined Short Form Content Type Selection -->
-                <label>Select Short Form Content Types:</label><br>
-                <div class="post-type-buttons">
-                    <button type="button" class="post-type-button" data-type="Linkedin Post">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                            <path fill="currentColor" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.5 11.268h-3v-5.5c0-1.381-1.119-2.5-2.5-2.5s-2.5 1.119-2.5 2.5v5.5h-3v-10h3v1.5c.69-1.19 2.019-2 3.5-2 2.481 0 4.5 2.019 4.5 4.5v6.5z"/>
-                        </svg>
-                        <span>Linkedin Post</span>
-                    </button>
-                    <button type="button" class="post-type-button" data-type="Video Demo Script">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                            <path fill="currentColor" d="M17 10.5v-6.5c0-1.104-.896-2-2-2h-10c-1.104 0-2 .896-2 2v12c0 1.104.896 2 2 2h10c1.104 0 2-.896 2-2v-6.5l5 5v-11l-5 5zm-2 7.5h-10v-12h10v12z"/>
-                        </svg>
-                        <span>Video Demo Script</span>
-                    </button>
-                    <button type="button" class="post-type-button" data-type="Changelog">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                            <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 22c-5.514 0-10-4.486-10-10s4.486-10 10-10 10 4.486 10 10-4.486 10-10 10zm-1-15h-2v6h6v-2h-4v-4z"/>
-                        </svg>
-                        <span>Changelog</span>
-                    </button>
-                    <button type="button" class="post-type-button" data-type="Slack message">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                            <path fill="currentColor" d="M5.5 15c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h1.5v-3h-1.5zm0-3h1.5v-3h-1.5c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5zm3 3h3v-3h-3v3zm0-6h3v-3h-3v3zm3 3h3v-3h-3v3zm3 3h1.5c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-1.5v3zm0-6h1.5c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-1.5v3zm-6 6h-1.5c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h1.5v-3zm6 0h3v-3h-3v3zm0-6h3v-3h-3v3z"/>
-                        </svg>
-                        <span>Slack message</span>
-                    </button>
-                    <button type="button" class="post-type-button" data-type="Intro for Blog Post">
-                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
-                            <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 22c-5.514 0-10-4.486-10-10s4.486-10 10-10 10 4.486 10 10-4.486 10-10 10zm-1-15h-2v6h6v-2h-4v-4z"/>
-                        </svg>
-                        <span>Intro for Blog Post</span>
-                    </button>
-                </div><br>
+                <!-- Short Form Content Section -->
+                <h2>Step 2: Create short form content</h2>
+                <div class="content-selection-container">
+                    <!-- Predefined Short Form Content Type Selection -->
+                    <label>Select Short Form Content Types:</label><br>
+                    <div class="post-type-buttons">
+                        <button type="button" class="post-type-button" data-type="Linkedin Post">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11 19h-3v-10h3v10zm-1.5-11.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.5 11.268h-3v-5.5c0-1.381-1.119-2.5-2.5-2.5s-2.5 1.119-2.5 2.5v5.5h-3v-10h3v1.5c.69-1.19 2.019-2 3.5-2 2.481 0 4.5 2.019 4.5 4.5v6.5z"/>
+                            </svg>
+                            <span>Linkedin Post</span>
+                        </button>
+                        <button type="button" class="post-type-button" data-type="Video Demo Script">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M17 10.5v-6.5c0-1.104-.896-2-2-2h-10c-1.104 0-2 .896-2 2v12c0 1.104.896 2 2 2h10c1.104 0 2-.896 2-2v-6.5l5 5v-11l-5 5zm-2 7.5h-10v-12h10v12z"/>
+                            </svg>
+                            <span>Video Demo Script</span>
+                        </button>
+                        <button type="button" class="post-type-button" data-type="Changelog">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 22c-5.514 0-10-4.486-10-10s4.486-10 10-10 10 4.486 10 10-4.486 10-10 10zm-1-15h-2v6h6v-2h-4v-4z"/>
+                            </svg>
+                            <span>Changelog</span>
+                        </button>
+                        <button type="button" class="post-type-button" data-type="Slack message">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M5.5 15c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h1.5v-3h-1.5zm0-3h1.5v-3h-1.5c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5zm3 3h3v-3h-3v3zm0-6h3v-3h-3v3zm3 3h3v-3h-3v3zm3 3h1.5c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-1.5v3zm0-6h1.5c.828 0 1.5-.672 1.5-1.5s-.672-1.5-1.5-1.5h-1.5v3zm-6 6h-1.5c-.828 0-1.5.672-1.5 1.5s.672 1.5 1.5 1.5h1.5v-3zm6 0h3v-3h-3v3zm0-6h3v-3h-3v3z"/>
+                            </svg>
+                            <span>Slack message</span>
+                        </button>
+                        <button type="button" class="post-type-button" data-type="Intro for Blog Post">
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm0 22c-5.514 0-10-4.486-10-10s4.486-10 10-10 10 4.486 10 10-4.486 10-10 10zm-1-15h-2v6h6v-2h-4v-4z"/>
+                            </svg>
+                            <span>Intro for Blog Post</span>
+                        </button>
+                    </div><br>
 
-                <!-- Custom Content Type Inputs -->
-                <label>Custom Content Types:</label><br>
-                <div id="customContentTypes"></div>
-                <button id="addMoreBtn" onclick="addCustomContentType()">Add</button><br><br>
+                    <!-- Custom Content Type Inputs -->
+                    <label>Add Custom Content Types:</label><br>
+                    <div id="customContentTypes"></div>
+                    <button id="addMoreBtn" class="button-secondary" onclick="addCustomContentType()">Add</button><br><br>
+                </div>
 
                 <!-- Submit Button -->
-                <button id="submitBtn" onclick="submitContent()">Submit</button><br><br>
+                <button id="submitBtn" class="button-primary" onclick="submitContent()">Create Short Form Content</button><br><br>
             </div>
 
             <!-- Status Indicator -->
@@ -115,7 +93,7 @@
             <div id="results"></div>
 
             <!-- Save to Google Docs Button -->
-            <button id="saveBtn" onclick="saveToDocs()" style="display:none;">Save to Google Docs</button><br><br>
+            <button id="saveBtn" class="button-primary" onclick="saveToDocs()" style="display:none;">Save to ClickUp</button><br><br>
 
             <!-- Past Generations Container -->
             <h2>Past Generations</h2>
@@ -125,19 +103,7 @@
 
     <script>
         let customTypeCount = 0;
-
-        // Predefined content type prompts
-        const prompts = {
-    "Linkedin Post": "400-700 characters.\nWill be posted on the founder's linkedin, thus, write from his perspective.\nshort sentences, use some longer sentences to break up the flow.\nKeep it informative, not salesy or marketingy.\nMake it specific, it's important people really understand what it's about. So don't use fluff, tell how it is and make that clear.\nOptimize for clarity, it should be organized very well.\nEvery sentence gets own paragraph for readability on mobile.\nNo formatting available.\nDon't be too detailed, e.g. no how to instructions in linkedin posts\nDon't put call to actions at the end of the post.\n\nExample #1:\nOur video recording feature has left beta & received an upgrade:\n\nYou can now use video block intros to personally explain any block in a Valuecase Space.\n\nWant to walk a client through a proposal or an onboarding plan?\n\nJust click the three-dot menu next to any block and select \"record block intro.\" It's that simple.\n\nYou'll give your customers a much more personalized experience.\n\nWe've also added some quality of life improvements.\n\nInstant video previews after recording (in some browsers), the ability to delete videos while they process, and various bug fixes based on user feedback.\n\n15 hours of videos have already been recorded in Valuecase.\n\nNow it's your turn to try it out.\n\nExample #2: \nHUGE!! -- For all of you working with our onboarding and success plans:\n\nI'm thrilled to introduce our NEW task dashboard!\n\nIt'll 10x your speed.\n\nHere's how it works:\n\nClick \"Tasks\" in your Valuecase environment.\n\nYou'll find a super clean progress chart that tracks your Spaces, with customer logos moving as you complete action plans.\n\nTasks are sorted into three columns: due next, overdue, and unscheduled.\n\nYou can even complete tasks right from the dashboard.\n\nMore features are on the way, like extra filters, task details, and Chrome extension integration.\n\nI'm pretty sure this will quickly become one of our most loved features.\n\nBig shoutout to the team for creating a task dashboard that’s genuinely useful!",
-    
-    "Video Demo Script": "Video length: 1-2 minutes.\nNo professional production, just a screen share walkthrough.\nJust make it bullets, not exact wording.\n\nScript template:\n{What it is}\n{Why it's important}\n{Walkthrough}",
-
-    "Changelog": "You are given a long-form product release newsletter that details new features, updates, and improvements. Your task is to condense this information into a concise changelog suitable for in-product communication. The changelog should be brief, clear, and focused on the most important updates. Follow these guidelines:\n\n1. Identify Key Points: Extract the most significant features, updates, and improvements from the newsletter.\n2. Brevity: Summarize the information in a concise manner, using bullet points or short paragraphs. Each update should be no more than 2-3 sentences.\n3. Clarity: Ensure the language is clear and easily understandable for the target audience.\n4. Relevance: Include only the most relevant details that users need to know.\n5. Tone and Style: Maintain an engaging and professional tone.\n6. Formatting: Use emojis and section headings to categorize and highlight different types of updates (e.g., new features, improvements, bug fixes).",
-
-    "Slack message": "You are given the latest product updates that need to be communicated to customers via a short Slack message. Your task is to create a concise, engaging, and informative message that highlights the key updates. The message should be brief, friendly, and encourage customers to check out the new features. Follow these guidelines:\n\n1. Greeting: Start with a friendly greeting like \"Hey all\".\n2. Highlight Key Updates: Briefly mention the most significant updates.\n3. Encouragement: Encourage customers to explore the new features or improvements.\n4. Tone and Style: Maintain an informal and engaging tone suitable for a Slack message.\n5. Keep short and easy to scan.\n6. No fluff, no CTA.\n\nExample:\n\nHey all, We released content automation today - a huge time saver. This enables you to create if-this-then-that automations to control page/block visibility based on variables.\n\nE.g., you could set up an automation that shows a specific testimonial block, a business case page, and a specific pricing ONLY if the space is for an Enterprise customer. Else, these elements would be hidden.\n\nTo make it a bit easier to understand, we recorded a video for you here (https://www.loom.com/share/61304744354745d0863fd8aa57803f60?sid=a8a45866-55cc-4a34-aa47-9e42abaace2e) and created a help article here (https://help.valuecase.de/en/articles/141106-content-automation). Any questions ➝ ping us.",
-
-    "Intro for Blog Post": "You are given a detailed product release newsletter that outlines new features, updates, and improvements. Your task is to condense this information into a concise one-paragraph summary suitable for an introduction to a blog post. The summary should be engaging, informative, and highlight the most important updates. Follow these guidelines:\n\nAim for 25-35 words.\nSummarize key points, but the summary does not need to be exhaustive. Just key points.\nKeep it specific.\nClarity: Ensure the language is clear and easily understandable.\nTone and Style: Maintain a tone that is professional yet approachable.\nDon't use meaningless intro words like \"Big news!\". No CTA to read the blog as users will just scroll down."
-};
+        let quill; // Declare quill in a wider scope
 
         // Function to add a new custom content type input
         function addCustomContentType() {
@@ -186,14 +152,14 @@
         }
 
         function submitContent() {
-            const longFormContent = document.getElementById('longContent').value;
+            const longFormContent = quill.root.innerHTML; // Get content from Quill
             const selectedTypes = [];
 
             // Collect selected post types from active buttons
             document.querySelectorAll('.post-type-button.active').forEach(button => {
                 const type = button.getAttribute('data-type');
-                if (type && prompts[type]) {
-                    selectedTypes.push({ type: type, prompt: prompts[type] });
+                if (type) {
+                    selectedTypes.push(type); // Only push the type, not the prompt
                 }
             });
 
@@ -204,7 +170,7 @@
                 if (customValue) {
                     const confirmAdd = confirm(`Are you sure you want to include "${customValue}" as a custom content type?`);
                     if (confirmAdd) {
-                        selectedTypes.push({ type: customValue, prompt: `Custom prompt for ${customValue}` });
+                        selectedTypes.push(customValue); // Only push the custom type
                     }
                 }
             }
@@ -223,7 +189,7 @@
             // Check if the token is still valid (30 minutes = 1800000 ms)
             if (!token || currentTime - tokenTimestamp > 1800000) {
                 alert('Your session has expired. Please log in again.');
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
                 return;
             }
 
@@ -251,7 +217,7 @@
                 },
                 body: JSON.stringify({
                     longContent: longFormContent,
-                    types: selectedTypes
+                    types: selectedTypes // Only send the types
                 })
             })
             .then(response => response.json())
@@ -312,16 +278,17 @@
                     const contentDiv = document.createElement('div');
                     contentDiv.classList.add('content-item');
 
-                    // Add headline for all content types
-                    const headline = document.createElement('h3');
+                    // Change headline from <h3> to <label>
+                    const headline = document.createElement('label');
                     headline.textContent = content.type;
                     contentDiv.appendChild(headline);
 
                     // Render LinkedIn-style preview for LinkedIn posts
                     if (content.type === 'Linkedin Post') {
                         const linkedinPreview = document.createElement('div');
-                        linkedinPreview.classList.add('linkedin-preview');
+                        linkedinPreview.classList.add('linkedin-preview-container');
                         linkedinPreview.innerHTML = `
+                            <div class="linkedin-preview">
                             <div class="linkedin-post">
                                 <div class="linkedin-header">
                                     <img src="https://via.placeholder.com/50" alt="Profile Picture" class="linkedin-profile-pic">
@@ -389,6 +356,115 @@
                 button.classList.toggle('active');
             });
         });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            quill = new Quill('#editor-container', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['clean']  // Remove formatting button
+                    ]
+                }
+            });
+
+            // Load saved content from local storage
+            const savedContent = localStorage.getItem('quillContent');
+            if (savedContent) {
+                quill.root.innerHTML = savedContent;
+            }
+
+            // Save content to local storage on text change
+            quill.on('text-change', function() {
+                const currentContent = quill.root.innerHTML;
+                localStorage.setItem('quillContent', currentContent);
+            });
+        });
+
+        function saveToDocs() {
+            const webhookUrl = 'https://hook.eu1.make.com/mc48y83lnmqsc6ktg1xidp8omiqwlnq4'; // Webhook URL
+
+            // Collect generated posts' content and type
+            const resultsContainer = document.getElementById('results');
+            const contentItems = resultsContainer.querySelectorAll('.content-item');
+            const postsData = Array.from(contentItems).map(item => {
+                const typeElement = item.querySelector('label'); // Assuming the type is in a <label> tag
+                const contentElement = item.querySelector('textarea'); // Assuming the content is in a <textarea>
+
+                // Check if both elements exist
+                if (typeElement && contentElement) {
+                    const type = typeElement.textContent;
+                    const content = contentElement.value;
+                    return { type, content };
+                } else {
+                    console.error('Missing type or content element in content item:', item);
+                    return null; // Return null if elements are missing
+                }
+            }).filter(post => post !== null); // Filter out any null entries
+
+            // Send the collected data to the webhook
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ posts: postsData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Content successfully saved to ClickUp!');
+                } else {
+                    alert('Failed to save content. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving content.');
+            });
+        }
+
+        function saveLongFormContent() {
+            const webhookUrl = 'https://hook.eu1.make.com/mc48y83lnmqsc6ktg1xidp8omiqwlnq4'; // Webhook URL for saving
+
+            // Get the HTML content from Quill
+            const longFormHtmlContent = quill.root.innerHTML;
+
+            // Convert HTML to markdown using Turndown
+            const turndownService = new TurndownService();
+            const longFormMarkdownContent = turndownService.turndown(longFormHtmlContent);
+
+            // Prepare the data to send
+            const data = {
+                posts: [{
+                    type: 'Product Newsletter',
+                    content: longFormMarkdownContent
+                }]
+            };
+
+            // Send the long-form content to the webhook
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Long form content successfully saved to ClickUp!');
+                } else {
+                    alert('Failed to save long form content. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while saving long form content.');
+            });
+        }
     </script>
 </body>
 </html>
